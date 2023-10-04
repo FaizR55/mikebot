@@ -1,0 +1,7 @@
+.env
+/env
+/__pycache__
+ffmpeg.exe
+app.-origin.py
+music-old.py
+image_filenames.db
