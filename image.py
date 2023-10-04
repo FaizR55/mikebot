@@ -20,7 +20,7 @@ class Image(commands.Cog):
         self.conn.commit()
 
     @commands.command()
-    async def save(self, ctx, filename):
+    async def save(self, ctx, *, filename):
         # Check if the message contains attachments
         if ctx.message.attachments:
             # Save the first attached image
@@ -35,8 +35,8 @@ class Image(commands.Cog):
         else:
             await ctx.send('No image attached.')
 
-    @commands.command()
-    async def image(self, ctx, filename):
+    @commands.command(name='image', aliases=['img'], description="Send saved image")
+    async def image(self, ctx, *, filename):
         # Query the database to retrieve the URL based on the filename
         self.c.execute("SELECT url FROM saved_images WHERE filename=?", (filename,))
         result = self.c.fetchone()
@@ -65,7 +65,7 @@ class Image(commands.Cog):
             await ctx.send('No saved images found.')
 
     @commands.command()
-    async def clear_images(self, ctx, filename=None):
+    async def clear_images(self, ctx, *, filename=None):
         if filename:
             # Delete the specific image by filename
             self.c.execute("DELETE FROM saved_images WHERE filename=?", (filename,))
