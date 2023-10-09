@@ -14,7 +14,7 @@ class Misc(commands.Cog):
         self.bot = bot
 
     @commands.command(name='news', aliases=['berita', 'n'], description="Return random news")
-    async def news(self, ctx):
+    async def news(self, ctx, *, param=None):
 
         try:
             async with ctx.typing():
@@ -63,10 +63,21 @@ class Misc(commands.Cog):
 
                 embed = discord.Embed(title = random_news[0], description = description, url = random_news[1])
                 embed.set_image(url = random_news[2])
+
+                if param == 'sum':
+                    message = "Buatlah ringkasan bullet poin dari artikel berita berikut ini : "+news
+                    response_chunks = ask_gpt(message)
+
             await ctx.send(embed=embed)
+            
+            if param == 'sum':
+                for i, chunk in enumerate(response_chunks):
+                    await ctx.send(chunk)
+            else:
+                pass
 
         except Exception as e:
-            print(news_item)
+            # print(news_item)
             await ctx.send(f"An error occurred: {str(e)}")
 
     @commands.command(name='gpt', aliases=['chat'], description="ChatGPT")
@@ -74,18 +85,8 @@ class Misc(commands.Cog):
         try:
             async with ctx.typing():
                 print("GPT MSG = "+message)
-                # Set the OpenAI API key
-                openai.api_key = os.getenv("gpt_token")
-
-                # Use the OpenAI API to generate a response to the message
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo", 
-                    messages=[{"role": "user", "content": message}]
-                    )
-                response_text = response.choices[0].message.content
-                chunks = split_text(response_text)
-
-            for i, chunk in enumerate(chunks):
+                response_chunks = ask_gpt(message)
+            for i, chunk in enumerate(response_chunks):
                 await ctx.send(chunk)
 
         except Exception as e:
@@ -93,6 +94,19 @@ class Misc(commands.Cog):
             await ctx.send("An error occured, please try again")
             # await ctx.send(f"An error occurred: {str(e)}")
 
+
+def ask_gpt(message):
+    # Set the OpenAI API key
+    openai.api_key = os.getenv("gpt_token")
+
+    # Use the OpenAI API to generate a response to the message
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo", 
+        messages=[{"role": "user", "content": message}]
+        )
+    response_text = response.choices[0].message.content
+    response_chunks = split_text(response_text)
+    return response_chunks
 
 def split_text(text, max_chunk_size=1995):
     chunks = []
